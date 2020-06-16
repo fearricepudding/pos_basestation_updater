@@ -12,6 +12,9 @@ QPushButton *updateButton;
 QLineEdit *filePath;
 QLabel *statusUpdate;
 QString package;
+QLineEdit *hostnameField;
+QLineEdit *usernameField;
+QLineEdit *passwordField;
 
 
 updater::updater(QWidget *parent)
@@ -24,8 +27,11 @@ updater::updater(QWidget *parent)
     filePath = ui->filePath;
     updateButton = ui->startButton;
     statusUpdate = ui->statusUpdate;
+	usernameField = ui->usernameEntry;
+	passwordField = ui->passwordEntry;
+	hostnameField = ui->hostnameEntry;
 
-    this->setFixedSize(650, 155);
+    this->setFixedSize(650, 316);
 
 
     connect(findFileButton, SIGNAL (released()), this, SLOT (FindFile()));
@@ -56,9 +62,16 @@ bool updater::startUpdate(){
     if (my_ssh_session == NULL)
         statusUpdate->setText("Failed to start ssh session");
 
-	const void * username = "pi";
-	const char * password = "raspberry";
-	const void * hostname = "192.168.1.89";
+
+	// Convert the QString to the appropriate types
+	std::string Qusername = usernameField->text().toUtf8().constData();
+	std::string Qpassword = passwordField->text().toUtf8().constData();
+	std::string Qhostname = hostnameField->text().toUtf8().constData();
+	
+	
+	const void * username = Qusername.c_str();
+	const void * hostname = Qhostname.c_str();
+	const char * password = Qpassword.c_str();
 
 	ssh_options_set(my_ssh_session, SSH_OPTIONS_USER, (const void *)username);
 	ssh_options_set(my_ssh_session, SSH_OPTIONS_HOST, hostname);

@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>650</width>
-    <height>155</height>
+    <height>316</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -30,9 +30,9 @@
     <property name="geometry">
      <rect>
       <x>520</x>
-      <y>80</y>
+      <y>230</y>
       <width>101</width>
-      <height>31</height>
+      <height>41</height>
      </rect>
     </property>
     <property name="text">
@@ -43,17 +43,20 @@
     <property name="geometry">
      <rect>
       <x>30</x>
-      <y>20</y>
+      <y>40</y>
       <width>461</width>
       <height>31</height>
      </rect>
+    </property>
+    <property name="text">
+     <string/>
     </property>
    </widget>
    <widget class="QPushButton" name="findFileButton">
     <property name="geometry">
      <rect>
       <x>520</x>
-      <y>20</y>
+      <y>40</y>
       <width>101</width>
       <height>31</height>
      </rect>
@@ -66,7 +69,7 @@
     <property name="geometry">
      <rect>
       <x>100</x>
-      <y>90</y>
+      <y>240</y>
       <width>381</width>
       <height>20</height>
      </rect>
@@ -79,13 +82,104 @@
     <property name="geometry">
      <rect>
       <x>30</x>
-      <y>90</y>
+      <y>240</y>
       <width>52</width>
       <height>21</height>
      </rect>
     </property>
     <property name="text">
      <string>Status:</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_2">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>20</y>
+      <width>161</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Select update package</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="usernameEntry">
+    <property name="geometry">
+     <rect>
+      <x>340</x>
+      <y>110</y>
+      <width>281</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>pi</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="passwordEntry">
+    <property name="geometry">
+     <rect>
+      <x>340</x>
+      <y>170</y>
+      <width>281</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>raspberry</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="hostnameEntry">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>110</y>
+      <width>281</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>192.168.1.89</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_3">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>90</y>
+      <width>81</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Hostname</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_4">
+    <property name="geometry">
+     <rect>
+      <x>340</x>
+      <y>90</y>
+      <width>101</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Username</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_5">
+    <property name="geometry">
+     <rect>
+      <x>340</x>
+      <y>150</y>
+      <width>81</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Password</string>
     </property>
    </widget>
   </widget>
@@ -95,7 +189,7 @@
      <x>0</x>
      <y>0</y>
      <width>650</width>
-     <height>18</height>
+     <height>22</height>
     </rect>
    </property>
   </widget>
