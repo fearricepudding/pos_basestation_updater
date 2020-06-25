@@ -16,12 +16,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="updater.ui" line="52"/>
-        <location filename="build/BaseStation_Updater_autogen/include/ui_updater.h" line="114"/>
-        <source>...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="updater.ui" line="65"/>
         <location filename="build/BaseStation_Updater_autogen/include/ui_updater.h" line="115"/>
         <source>Select File</source>

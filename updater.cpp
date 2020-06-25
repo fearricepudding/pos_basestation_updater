@@ -52,30 +52,23 @@ updater::~updater()
 
 
 bool updater::startUpdate(){
-    statusUpdate->setText("Starting update... do NOT turn off the BaseStation!");
+    statusUpdate->setText("Starting update");
     printf("Staring update...");
-
-
     ssh_session my_ssh_session;
     int rc;
     my_ssh_session = ssh_new();
     if (my_ssh_session == NULL)
         statusUpdate->setText("Failed to start ssh session");
-
-
 	// Convert the QString to the appropriate types
 	std::string Qusername = usernameField->text().toUtf8().constData();
 	std::string Qpassword = passwordField->text().toUtf8().constData();
 	std::string Qhostname = hostnameField->text().toUtf8().constData();
-	
-	
 	const void * username = Qusername.c_str();
 	const void * hostname = Qhostname.c_str();
 	const char * password = Qpassword.c_str();
-
+	// Set connection info
 	ssh_options_set(my_ssh_session, SSH_OPTIONS_USER, (const void *)username);
 	ssh_options_set(my_ssh_session, SSH_OPTIONS_HOST, hostname);
-
     rc = ssh_connect(my_ssh_session);
     if (rc != SSH_OK)
     {
@@ -84,7 +77,7 @@ bool updater::startUpdate(){
         statusUpdate->setText(ssh_get_error(my_ssh_session));
         return false;
     }
-
+	// Set password auth
     rc = ssh_userauth_password(my_ssh_session, NULL, password);
     if (rc == SSH_AUTH_ERROR)
     {
@@ -92,11 +85,7 @@ bool updater::startUpdate(){
                 ssh_get_error(my_ssh_session));
         statusUpdate->setText(ssh_get_error(my_ssh_session));
     }
-
-
     // SCP START
-    statusUpdate->setText("Uploading package");
-
     ssh_scp scp;
     scp = ssh_scp_new(my_ssh_session, SSH_SCP_RECURSIVE, "./");
     if (scp == NULL)
@@ -114,7 +103,7 @@ bool updater::startUpdate(){
         statusUpdate->setText(ssh_get_error(my_ssh_session));
         return rc;
     }
-
+	// Create the update directory
     rc = ssh_scp_push_directory(scp, "BASESTATION_UPDATE", 0700);
     if (rc != SSH_OK)
     {
@@ -122,14 +111,19 @@ bool updater::startUpdate(){
                 ssh_get_error(my_ssh_session));
         return rc;
     }
-
+	// Get the size of the update for uploading
     int size = 0;
     QFile myFile(package);
     if (myFile.open(QIODevice::ReadOnly)){
         size = myFile.size();  //when file does open.
-    }
-
-    rc = ssh_scp_push_file(scp, package.toStdString().c_str(), size, 0700);
+    }else{
+		statusUpdate->setText("Failed to get filesize");
+		return 0; 
+	}
+	// move the update package to /tmp and set correct name
+	std::rename(package.toStdString().c_str(), "/tmp/basestation_update.pak");
+	// Upload the file
+    rc = ssh_scp_push_file(scp, "/tmp/basestation_update.pak", size, 0700);
     if (rc != SSH_OK)
     {
         fprintf(stderr, "Can't open remote file: %s\n",
@@ -137,7 +131,6 @@ bool updater::startUpdate(){
         statusUpdate->setText(ssh_get_error(my_ssh_session));
         return rc;
     }
-
     rc = ssh_scp_write(scp, myFile.readAll() , size);
     if (rc != SSH_OK)
     {
@@ -146,17 +139,13 @@ bool updater::startUpdate(){
         statusUpdate->setText(ssh_get_error(my_ssh_session));
         return rc;
     }
-
+	// Close the scp connnection
     myFile.close();
     ssh_scp_close(scp);
     ssh_scp_free(scp);
-
-
     ssh_channel channel;
-
     channel = ssh_channel_new(my_ssh_session);
     if (channel == NULL) return SSH_ERROR;
-
     rc = ssh_channel_open_session(channel);
     if (rc != SSH_OK)
     {
@@ -164,26 +153,18 @@ bool updater::startUpdate(){
         statusUpdate->setText(ssh_get_error(my_ssh_session));
         return rc;
     }
-
-    statusUpdate->setText("Telling BaseStation to update");
-
-
-
     char buffer[1000];
     int nbytes;
-
-
-    rc = ssh_channel_request_exec(channel, "unzip -o ~/BASESTATION_UPDATE/Till-master.zip -d ~/BASESTATION_UPDATE && sh ~/BASESTATION_UPDATE/Till-master/update.sh");
+	// Send update command
+    rc = ssh_channel_request_exec(channel, "unzip -o ~/BASESTATION_UPDATE/basestation_update.pak -d ~/BASESTATION_UPDATE && sh ~/BASESTATION_UPDATE/Till-master/update.sh");
     if (rc != SSH_OK)
     {
         statusUpdate->setText(ssh_get_error(my_ssh_session));
         return rc;
     }
-
     nbytes = ssh_channel_read(channel, buffer, sizeof(buffer), 0);
     while (nbytes > 0)
     {
-
         if (fwrite(buffer, 1, nbytes, stdout) != nbytes)
         {
             statusUpdate->setText(ssh_get_error(my_ssh_session));
@@ -193,26 +174,12 @@ bool updater::startUpdate(){
         nbytes = ssh_channel_read(channel, buffer, sizeof(buffer), 0);
         //fprintf(stdout, "%s", buffer);
     }
-
-
-    // Build basestation
-    fprintf(stdout, "Sending build payload");
-
-
-
     statusUpdate->setText("Done. Base station will now update and reboot");
-
+	// Close ssh connection
     ssh_channel_send_eof(channel);
     ssh_channel_close(channel);
     ssh_channel_free(channel);
-
-
-
-
-    // SCP END
-
     ssh_disconnect(my_ssh_session);
     ssh_free(my_ssh_session);
     return true;
-
 }
