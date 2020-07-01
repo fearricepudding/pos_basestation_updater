@@ -25,7 +25,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 #endif()
 
 find_package(Qt5 COMPONENTS Widgets LinguistTools REQUIRED)
-
+include_directories("/usr/local/include")
+link_directories("/usr/local/lib")
 set(TS_FILES BaseStation_Updater_en_GB.ts)
 
 if(ANDROID)
