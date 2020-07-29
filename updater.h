@@ -26,3 +26,11 @@ public slots:
     bool startUpdate();
 };
 #endif // UPDATER_H
+
+class updaterException: public std::runtime_error
+{
+    public:
+        updaterException(std::string const& msg):
+            std::runtime_error(msg)
+        {}
+};

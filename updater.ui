@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>650</width>
-    <height>316</height>
+    <height>314</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -71,7 +71,7 @@
       <x>100</x>
       <y>240</y>
       <width>381</width>
-      <height>20</height>
+      <height>21</height>
      </rect>
     </property>
     <property name="text">
@@ -189,7 +189,7 @@
      <x>0</x>
      <y>0</y>
      <width>650</width>
-     <height>22</height>
+     <height>30</height>
     </rect>
    </property>
   </widget>
