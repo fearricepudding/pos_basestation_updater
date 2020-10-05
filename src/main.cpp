@@ -8,19 +8,67 @@
 #include <cppcms/applications_pool.h>
 #include <iostream>
 #include <stdlib.h>
+#include <stdio.h>
+#include <curl/curl.h>
+#include <json/json.h>
 #include "main.h"
+
+std::size_t callback(const char* in, std::size_t size, std::size_t num, std::string* out){
+    const std::size_t totalBytes(size * num);
+    out->append(in, totalBytes);
+    return totalBytes;
+}
 
 BSUpdater::BSUpdater(cppcms::service &srv): cppcms::application(srv){
 	dispatcher().assign("", &BSUpdater::status, this);
+	dispatcher().assign("/check", &BSUpdater::checkForUpdate, this);
 
 }
 
 void BSUpdater::status(){
-	response().out() << "BaseStationUpdater V2";
+	response().out() << "{\"version\":\"2.1.1\"}";
 }
 
 void BSUpdater::checkForUpdate(){
-	
+	Json::Value data = GET("http://localhost:8080/status");
+	response().out() << data["version"].asString();
+}
+
+/**
+ * HTTP GET request from url
+ *
+ * @param std::string URL to get json data from
+ * @return Json::Value response json or bool on fail
+ */
+Json::Value BSUpdater::GET(std::string requestUrl){
+	const std::string url(requestUrl);
+    CURL* curl = curl_easy_init();
+    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+    curl_easy_setopt(curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10);
+    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+    long httpCode(0);
+    std::unique_ptr<std::string> httpData(new std::string());
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, callback);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, httpData.get());
+    // Perform curl
+    curl_easy_perform(curl);
+    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
+    curl_easy_cleanup(curl);
+    if(httpCode == 200){
+        Json::Value jsonData;
+        Json::Reader jsonReader;
+        if(jsonReader.parse(*httpData.get(), jsonData)){
+            return jsonData;
+        }else{
+            std::cout << "Could not parse HTTP data as JSON" << std::endl;
+            std::cout << "HTTP data was:\n" << *httpData.get() << std::endl;
+            return 1;
+        }
+    }else{
+        std::cout << "Couldn't GET from " << url << " - exiting" << std::endl;
+        return 1;
+    }
 }
 
 int main(int argc,char ** argv){
