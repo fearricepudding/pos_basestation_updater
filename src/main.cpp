@@ -11,7 +11,9 @@
 #include <stdio.h>
 #include <curl/curl.h>
 #include <json/json.h>
+
 #include "main.h"
+#include "version.h"
 
 std::size_t callback(const char* in, std::size_t size, std::size_t num, std::string* out){
     const std::size_t totalBytes(size * num);
@@ -30,8 +32,14 @@ void BSUpdater::status(){
 }
 
 void BSUpdater::checkForUpdate(){
-	Json::Value data = GET("http://localhost:8080/status");
-	response().out() << data["version"].asString();
+	Json::Value localVersionResponse = GET("http://localhost:8080/");
+	Json::Value latestVersionResponse = GET("http://localhost:8000/latest.php");
+	version localVersion = version(localVersionResponse["version"].asString());
+	version latestVersion = version(latestVersionResponse["version"].asString());
+	
+	localVersion.compare(latestVersion);
+	
+	response().out() << "123";
 }
 
 /**
@@ -63,12 +71,11 @@ Json::Value BSUpdater::GET(std::string requestUrl){
         }else{
             std::cout << "Could not parse HTTP data as JSON" << std::endl;
             std::cout << "HTTP data was:\n" << *httpData.get() << std::endl;
-            return 1;
         }
     }else{
         std::cout << "Couldn't GET from " << url << " - exiting" << std::endl;
-        return 1;
     }
+    return "";
 }
 
 int main(int argc,char ** argv){
