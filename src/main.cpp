@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <curl/curl.h>
 #include <json/json.h>
+#include <vector>
 
 #include "main.h"
 #include "version.h"
@@ -28,18 +29,33 @@ BSUpdater::BSUpdater(cppcms::service &srv): cppcms::application(srv){
 }
 
 void BSUpdater::status(){
-	response().out() << "{\"version\":\"2.1.1\"}";
+	response().out() << "{\"version\":\"2.32.122\"}";
 }
 
 void BSUpdater::checkForUpdate(){
-	Json::Value localVersionResponse = GET("http://localhost:8080/");
-	Json::Value latestVersionResponse = GET("http://localhost:8000/latest.php");
-	version localVersion = version(localVersionResponse["version"].asString());
-	version latestVersion = version(latestVersionResponse["version"].asString());
-	
-	localVersion.compare(latestVersion);
-	
-	response().out() << "123";
+	version localVersion;
+	version latestVersion;
+	try{
+		Json::Value localVersionResponse = GET("http://localhost:8081/");
+		Json::Value latestVersionResponse = GET("localhost:8888/latest.php");
+		localVersion.build = localVersionResponse["version"].asString();
+		latestVersion.build = latestVersionResponse["version"].asString();
+		
+		// XXX: Get latest v from update server
+		bool test = localVersion.compare(latestVersion);
+		if(test){
+			std::cout << "Outdated" << std::endl;
+			response().out() << "Outdated";
+		}else{
+			std::cout << "Latest" << std::endl;
+			response().out() << "Latest";
+		}
+		
+	} catch (Json::Exception const&) {
+		std::cout << "Json error" << std::endl;
+		response().out() << "Failed to get latest version, please try again later.";
+	}
+
 }
 
 /**
@@ -64,14 +80,14 @@ Json::Value BSUpdater::GET(std::string requestUrl){
     curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
     curl_easy_cleanup(curl);
     if(httpCode == 200){
-        Json::Value jsonData;
-        Json::Reader jsonReader;
-        if(jsonReader.parse(*httpData.get(), jsonData)){
-            return jsonData;
-        }else{
-            std::cout << "Could not parse HTTP data as JSON" << std::endl;
-            std::cout << "HTTP data was:\n" << *httpData.get() << std::endl;
-        }
+		    Json::Value jsonData;
+		    Json::Reader jsonReader;
+		    if(jsonReader.parse(*httpData.get(), jsonData)){
+		        return jsonData;
+		    }else{
+		        std::cout << "Could not parse HTTP data as JSON" << std::endl;
+		        std::cout << "HTTP data was:\n" << *httpData.get() << std::endl;
+		    }
     }else{
         std::cout << "Couldn't GET from " << url << " - exiting" << std::endl;
     }
