@@ -1,52 +1,12 @@
-cmake_minimum_required(VERSION 3.5)
+PROJECT(BaseStationUpdater)
+cmake_minimum_required(VERSION 2.8.11)
 
-project(BaseStation_Updater LANGUAGES CXX)
+include_directories(include /usr/local/include)
+link_directories(/usr/local/lib)
 
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
+file(GLOB baseStationUpdater_SRC "src/*.cpp")
+add_executable(baseStationUpdater ${baseStationUpdater_SRC})
 
-set(CMAKE_AUTOUIC ON)
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
+target_link_libraries(baseStationUpdater LINK_PUBLIC pthread cppcms dl pcre icui18n booster crypto z ssl jsoncpp curl)
 
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# QtCreator supports the following variables for Android, which are identical to qmake Android variables.
-# Check http://doc.qt.io/qt-5/deployment-android.html for more information.
-# They need to be set before the find_package(Qt5 ...) call.
-
-#if(ANDROID)
-#    set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android")
-#    if (ANDROID_ABI STREQUAL "armeabi-v7a")
-#        set(ANDROID_EXTRA_LIBS
-#            ${CMAKE_CURRENT_SOURCE_DIR}/path/to/libcrypto.so
-#            ${CMAKE_CURRENT_SOURCE_DIR}/path/to/libssl.so)
-#    endif()
-#endif()
-
-find_package(Qt5 COMPONENTS Widgets LinguistTools REQUIRED)
-include_directories("/usr/local/include")
-link_directories("/usr/local/lib")
-set(TS_FILES BaseStation_Updater_en_GB.ts)
-
-if(ANDROID)
-  add_library(BaseStation_Updater SHARED
-    main.cpp
-    updater.cpp
-    updater.h
-    updater.ui
-    ${TS_FILES}
-  )
-else()
-  add_executable(BaseStation_Updater
-    main.cpp
-    updater.cpp
-    updater.h
-    updater.ui
-    ${TS_FILES}
-  )
-endif()
-
-target_link_libraries(BaseStation_Updater PRIVATE Qt5::Widgets ssh)
-
-qt5_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
