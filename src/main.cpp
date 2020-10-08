@@ -24,38 +24,42 @@ std::size_t callback(const char* in, std::size_t size, std::size_t num, std::str
 
 BSUpdater::BSUpdater(cppcms::service &srv): cppcms::application(srv){
 	dispatcher().assign("", &BSUpdater::status, this);
-	dispatcher().assign("/check", &BSUpdater::checkForUpdate, this);
-
+//	dispatcher().assign("/test", &BSUpdater::test, this);
+	// XXX: Maybe check BS config for address and port incase of change.
+	_updateServerAddress = "localhost:8081";
+	_baseStationAddress = "http://clarkeandcoproperty.co.uk/version.php";
 }
 
 void BSUpdater::status(){
 	response().out() << "{\"version\":\"2.32.122\"}";
 }
 
-void BSUpdater::checkForUpdate(){
+bool BSUpdater::checkForUpdate(){
 	version localVersion;
 	version latestVersion;
 	try{
-		Json::Value localVersionResponse = GET("http://localhost:8081/");
-		Json::Value latestVersionResponse = GET("localhost:8888/latest.php");
+		Json::Value localVersionResponse = GET(_updateServerAddress);
 		localVersion.build = localVersionResponse["version"].asString();
-		latestVersion.build = latestVersionResponse["version"].asString();
-		
-		// XXX: Get latest v from update server
-		bool test = localVersion.compare(latestVersion);
-		if(test){
-			std::cout << "Outdated" << std::endl;
-			response().out() << "Outdated";
-		}else{
-			std::cout << "Latest" << std::endl;
-			response().out() << "Latest";
-		}
-		
+		response().out() << "Local version: " << localVersion.build << "<br />";
 	} catch (Json::Exception const&) {
 		std::cout << "Json error" << std::endl;
-		response().out() << "Failed to get latest version, please try again later.";
+		response().out() << "Failed to get local BaseStation version, is it running?";
 	}
-
+	try{
+		Json::Value latestVersionResponse = GET(_baseStationAddress);
+		latestVersion.build = latestVersionResponse["version"].asString();
+		response().out() << "Latest version: " << latestVersion.build << "<br />";
+	} catch (Json::Exception const&) {
+		std::cout << "Json error" << std::endl;
+		response().out() << "Failed to get latest version from server, are you online?";
+	}
+//	bool test = localVersion.compare(latestVersion);
+//	if(test){
+//		response().out() << "Outdated";
+//	}else{
+//		response().out() << "Up to date";
+//	}
+	return localVersion.compare(latestVersion);
 }
 
 /**
@@ -66,7 +70,7 @@ void BSUpdater::checkForUpdate(){
  */
 Json::Value BSUpdater::GET(std::string requestUrl){
 	const std::string url(requestUrl);
-    CURL* curl = curl_easy_init();
+	CURL* curl = curl_easy_init();
     curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
     curl_easy_setopt(curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
     curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10);
@@ -80,14 +84,14 @@ Json::Value BSUpdater::GET(std::string requestUrl){
     curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
     curl_easy_cleanup(curl);
     if(httpCode == 200){
-		    Json::Value jsonData;
-		    Json::Reader jsonReader;
-		    if(jsonReader.parse(*httpData.get(), jsonData)){
-		        return jsonData;
-		    }else{
-		        std::cout << "Could not parse HTTP data as JSON" << std::endl;
-		        std::cout << "HTTP data was:\n" << *httpData.get() << std::endl;
-		    }
+	    Json::Value jsonData;
+	    Json::Reader jsonReader;
+	    if(jsonReader.parse(*httpData.get(), jsonData)){
+	        return jsonData;
+	    }else{
+	        std::cout << "Could not parse HTTP data as JSON" << std::endl;
+//	        std::cout << "HTTP data was:\n" << *httpData.get() << std::endl;
+	    }
     }else{
         std::cout << "Couldn't GET from " << url << " - exiting" << std::endl;
     }

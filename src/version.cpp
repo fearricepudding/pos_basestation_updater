@@ -10,6 +10,12 @@ version::version(std::string inp){
 }
 version::version(){}
 
+/**
+ * Compare to numerical version strings seperated by fullstops 
+ *
+ * @param version comp - version to compare against
+ * @return bool - true if outdated
+ */
 bool version::compare(version comp){
 	std::vector<int> local = this->split();
 	std::vector<int> remote = comp.split();
@@ -30,7 +36,7 @@ bool version::compare(version comp){
 /**
  * Split the version string into its int values
  *
- * @return int array or version values
+ * @return vector array of version sections
  *
  * TODO: Fix this ugly mess.
  */
