@@ -25,7 +25,7 @@ TEST_F(VersionTest, CheckVersionOutdated){
 TEST_F(VersionTest, CheckLongerLatestVersion){
 	version example_one("1.1.1");
 	version example_two("1.1.1.1");
-	EXPECT_TRUE(example_one.compare(example_two));
+	EXPECT_FALSE(example_one.compare(example_two));
 }
 TEST_F(VersionTest, CheckLongerLocalVersion){
 	version example_one("1.1.1.1");
