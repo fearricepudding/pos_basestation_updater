@@ -38,7 +38,7 @@ BSUpdater::BSUpdater(cppcms::service &srv): cppcms::application(srv){
  * @return void
  */
 void BSUpdater::status(){
-	response().out() << "{\"version\":\"0.1.24\"}";
+	response().out() << "{\"version\":\"2.32.265\"}";
 }
 
 /**
@@ -47,6 +47,8 @@ void BSUpdater::status(){
  * @return bool - local version set success
  */
 bool BSUpdater::setLocalVersion(){
+	if(_localVersion.set)
+		return true;
 	try{
 		Json::Value localVersionResponse = GET(_updateServerAddress);
 		_localVersion.build = localVersionResponse["version"].asString();
@@ -65,6 +67,8 @@ bool BSUpdater::setLocalVersion(){
  * @return bool - latest version set success
  */
 bool BSUpdater::setLatestVersion(){
+	if(_latestVersion.set)
+		return true;
 	try{
 		Json::Value latestVersionResponse = GET(_baseStationAddress);
 		_latestVersion.build = latestVersionResponse["version"].asString();
